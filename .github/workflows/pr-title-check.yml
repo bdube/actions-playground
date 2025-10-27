@@ -8,12 +8,28 @@ jobs:
   check-pr-title:
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: read
+      pull-requests: write
     steps:
       - name: Check PR title format
+        id: pr-title-check
         uses: deepakputhraya/action-pr-title@v1.0.2
         with:
           regex: 'IMX-\d+'
           prefix_case_sensitive: false
           min_length: 5
           max_length: 1000
+
+      - name: Comment on PR if title check fails
+        if: failure() && steps.pr-title-check.outcome == 'failure'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { context, github } = require('@actions/github');
+            const prNumber = context.payload.pull_request.number;
+            const repo = context.repo;
+
+            await github.rest.issues.createComment({
+              ...repo,
+              issue_number: prNumber,
+              body: 'The PR title does not meet the required format. Please ensure it matches the pattern `IMX-\\d+`.'
+            });
