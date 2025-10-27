@@ -12,8 +12,6 @@ jobs:
         uses: deepakputhraya/action-pr-title@v1.0.2
         with:
           regex: 'IMX-\d+'
-          allowed_prefixes: ''
-          disallowed_prefixes: ''
           prefix_case_sensitive: false
-          min_length: 1
+          min_length: 5
           max_length: 1000
