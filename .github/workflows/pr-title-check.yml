@@ -1,18 +1,20 @@
-name: PR Title Check
+name: Validate PR Title Format
 
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
+  workflow_call:
+
+permissions:
+  pull-requests: write
 
 jobs:
   check-pr-title:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     steps:
       - name: Check PR title format
-        id: pr-title-check
-        uses: deepakputhraya/action-pr-title@v1.0.2
+        id: check-pr-title
+        uses: deepakputhraya/action-pr-title@3864bebc79c5f829d25dd42d3c6579d040b0ef16 # v1.0.2
         with:
           regex: 'IMX-\d+'
           prefix_case_sensitive: false
@@ -20,15 +22,19 @@ jobs:
           max_length: 1000
 
       - name: Comment on PR if title check fails
-        if: failure() && steps.pr-title-check.outcome == 'failure'
-        uses: actions/github-script@v6
+        if: steps.check-pr-title.outcome == 'failure'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
             const repo = context.repo;
 
-            await github.rest.issues.createComment({
-              ...repo,
-              issue_number: prNumber,
-              body: 'The PR title does not meet the required format. Please ensure it matches the pattern `IMX-\\d+`.'
-            });
+            try {
+              await github.rest.issues.createComment({
+                ...repo,
+                issue_number: prNumber,
+                body: 'The PR title does not meet the required format. Please ensure it matches the pattern `IMX-\\d+` (e.g., `IMX-1234 Add new feature`).'
+              });
+            } catch (error) {
+              core.setFailed(`Failed to comment on the PR: ${error.message}`);
+            }
