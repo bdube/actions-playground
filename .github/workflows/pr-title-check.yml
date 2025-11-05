@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check PR title format
-        id: check-pr-title
         uses: deepakputhraya/action-pr-title@3864bebc79c5f829d25dd42d3c6579d040b0ef16 # v1.0.2
         with:
           regex: 'IMX-\d+'
@@ -22,7 +21,7 @@ jobs:
           max_length: 1000
 
       - name: Comment on PR if title check fails
-        if: steps.check-pr-title.outcome == 'failure'
+        if: failure()
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
