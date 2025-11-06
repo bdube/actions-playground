@@ -32,9 +32,9 @@ jobs:
             const repo = context.repo;
 
             try {
-              await github.rest.pulls.createComment({
+              await github.rest.issues.createComment({
                 ...repo,
-                pull_number: prNumber,
+                issue_number: prNumber,
                 body: 'The PR title does not meet the required format. Please ensure it matches the pattern `IMX-\\d+` (e.g., `IMX-1234 Add new feature`).'
               });
             } catch (error) {
