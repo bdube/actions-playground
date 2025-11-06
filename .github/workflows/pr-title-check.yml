@@ -2,10 +2,12 @@ name: Validate PR Title Format
 
 on:
   pull_request:
+    branches: [main, release/*]
     types: [opened, edited, synchronize, reopened]
   workflow_call:
 
 permissions:
+  # To comment on pull requests.
   pull-requests: write
 
 jobs:
@@ -22,18 +24,10 @@ jobs:
 
       - name: Comment on PR if title check fails
         if: failure()
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
-            const repo = context.repo;
-
-            try {
-              await github.rest.issues.createComment({
-                ...repo,
-                issue_number: prNumber,
-                body: 'The PR title does not meet the required format. Please ensure it matches the pattern `IMX-\\d+` (e.g., `IMX-1234 Add new feature`).'
-              });
-            } catch (error) {
-              core.setFailed(`Failed to comment on the PR: ${error.message}`);
-            }
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          gh pr comment
+          ${{ github.event.pull_request.number }}
+          --body "The PR title does not meet the required format. Please ensure it matches the pattern \`IMX-\\d+\` (e.g., \`IMX-1234 Add new feature\`)."
